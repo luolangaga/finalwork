@@ -40,6 +40,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/library
       SPRING_DATASOURCE_USERNAME: library_admin
       SPRING_DATASOURCE_PASSWORD: ${PG_PASSWORD:-library_password}

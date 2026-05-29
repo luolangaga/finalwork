@@ -26,7 +26,7 @@ public class BorrowService {
     private BorrowerRepository borrowerRepo;
     @Autowired
     private BorrowRecordRepository recordRepo;
-    @Autowired
+    @Autowired(required = false)
     private RabbitTemplate rabbitTemplate;
 
     private final Map<String, BorrowPolicy> policies = Map.of(
@@ -65,14 +65,16 @@ public class BorrowService {
         recordRepo.save(record);
         borrowerRepo.save(borrower);
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.LIBRARY_EXCHANGE,
-                "borrow.created",
-                Map.of("borrowerId", borrowerId,
-                        "resourceId", resourceId,
-                        "borrowDate", LocalDate.now().toString(),
-                        "dueDate", LocalDate.now().plusDays(borrowDays).toString())
-        );
+        if (rabbitTemplate != null) {
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LIBRARY_EXCHANGE,
+                    "borrow.created",
+                    Map.of("borrowerId", borrowerId,
+                            "resourceId", resourceId,
+                            "borrowDate", LocalDate.now().toString(),
+                            "dueDate", LocalDate.now().plusDays(borrowDays).toString())
+            );
+        }
 
         return record;
     }
@@ -84,12 +86,14 @@ public class BorrowService {
         resource.returnResource();
         resourceRepo.save(resource);
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.LIBRARY_EXCHANGE,
-                "borrow.returned",
-                Map.of("resourceId", resourceId,
-                        "returnDate", LocalDate.now().toString())
-        );
+        if (rabbitTemplate != null) {
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LIBRARY_EXCHANGE,
+                    "borrow.returned",
+                    Map.of("resourceId", resourceId,
+                            "returnDate", LocalDate.now().toString())
+            );
+        }
     }
 
     public List<BorrowRecord> getBorrowRecords(String borrowerId) {

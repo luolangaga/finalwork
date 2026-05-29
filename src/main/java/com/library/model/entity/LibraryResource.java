@@ -1,12 +1,14 @@
 package com.library.model.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
 import java.util.Map;
 
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "resource_type", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "library_resource")
 public abstract class LibraryResource {
 
@@ -17,7 +19,7 @@ public abstract class LibraryResource {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "resource_type", nullable = false, length = 31)
+    @Column(name = "resource_type", nullable = false, length = 31, insertable = false, updatable = false)
     private String type;
 
     @Enumerated(EnumType.STRING)
@@ -28,8 +30,8 @@ public abstract class LibraryResource {
     private LocalDate borrowDate;
     private LocalDate dueDate;
 
-    @Type(JsonType.class)
-    @Column(name = "extra_attrs", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "extra_attrs")
     private Map<String, Object> extraAttrs;
 
     public enum ResourceStatus {

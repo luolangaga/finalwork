@@ -19,7 +19,7 @@ public class ResourceService {
     @Autowired
     private ResourceRepository resourceRepo;
 
-    @Autowired
+    @Autowired(required = false)
     private RabbitTemplate rabbitTemplate;
 
     public List<ResourceDTO> findAll() {
@@ -52,12 +52,14 @@ public class ResourceService {
         LibraryResource resource = ResourceFactory.create(dto);
         resourceRepo.save(resource);
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.LIBRARY_EXCHANGE,
-                "resource.created",
-                java.util.Map.of("resourceId", resource.getId(),
-                        "type", resource.getType())
-        );
+        if (rabbitTemplate != null) {
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LIBRARY_EXCHANGE,
+                    "resource.created",
+                    java.util.Map.of("resourceId", resource.getId(),
+                            "type", resource.getType())
+            );
+        }
 
         return convertToDTO(resource);
     }
@@ -66,11 +68,13 @@ public class ResourceService {
     public void deleteResource(String id) {
         resourceRepo.deleteById(id);
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.LIBRARY_EXCHANGE,
-                "resource.deleted",
-                java.util.Map.of("resourceId", id)
-        );
+        if (rabbitTemplate != null) {
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LIBRARY_EXCHANGE,
+                    "resource.deleted",
+                    java.util.Map.of("resourceId", id)
+            );
+        }
     }
 
     private ResourceDTO convertToDTO(LibraryResource r) {
