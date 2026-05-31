@@ -60,9 +60,9 @@ public class BorrowService {
     }
 
     public List<BorrowRecord> getBorrowRecords(String borrowerId) {
-        return recordRepo.findAll().stream()
-                .filter(r -> r.getResourceId().equals(borrowerId))
-                .collect(Collectors.toList());
+        Borrower borrower = borrowerRepo.findById(borrowerId)
+                .orElseThrow(() -> new RuntimeException("借阅者不存在"));
+        return borrower.getBorrowHistory();
     }
 
     public List<BorrowRecord> getOverdueRecords() {
