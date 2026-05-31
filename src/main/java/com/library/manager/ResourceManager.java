@@ -7,17 +7,20 @@ import java.util.stream.Collectors;
 public class ResourceManager {
 
     private final Map<String, LibraryResource> resourceMap;
-    private final TreeSet<LibraryResource> titleIndex;
+    private final List<LibraryResource> sortedList;
 
     public ResourceManager() {
         this.resourceMap = new HashMap<>();
-        this.titleIndex = new TreeSet<>(
-                Comparator.comparing(LibraryResource::getTitle));
+        this.sortedList = new ArrayList<>();
     }
 
     public void addResource(LibraryResource resource) {
         resourceMap.put(resource.getId(), resource);
-        titleIndex.add(resource);
+        if (!sortedList.contains(resource)) {
+            sortedList.add(resource);
+            sortedList.sort(Comparator.comparing(LibraryResource::getTitle)
+                    .thenComparing(LibraryResource::getId));
+        }
     }
 
     public LibraryResource findById(String id) {
@@ -37,13 +40,13 @@ public class ResourceManager {
     }
 
     public List<LibraryResource> getAllResources() {
-        return new ArrayList<>(titleIndex);
+        return new ArrayList<>(sortedList);
     }
 
     public void removeResource(String id) {
         LibraryResource resource = resourceMap.remove(id);
         if (resource != null) {
-            titleIndex.remove(resource);
+            sortedList.remove(resource);
         }
     }
 
