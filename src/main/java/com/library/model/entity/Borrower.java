@@ -22,6 +22,7 @@ public class Borrower {
     @OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BorrowRecord> borrowHistory = new ArrayList<>();
 
+    @Transient
     private static final int MAX_BORROW_LIMIT = 5;
 
     protected Borrower() {}

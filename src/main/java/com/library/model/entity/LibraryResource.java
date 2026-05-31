@@ -38,6 +38,11 @@ public abstract class LibraryResource {
 
     public abstract String getResourceType();
 
+    @Transient
+    public boolean isAvailable() {
+        return status == ResourceStatus.AVAILABLE;
+    }
+
     public boolean borrow(String borrowerId) {
         if (status != ResourceStatus.AVAILABLE) {
             return false;
