@@ -3,14 +3,13 @@ package com.library.model.entity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "borrower")
 public class Borrower {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false)
     private String id;
 
     @Column(nullable = false)
@@ -19,11 +18,11 @@ public class Borrower {
     private String phone;
     private String email;
 
+    @Column(nullable = false)
+    private String type = "STUDENT";
+
     @OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BorrowRecord> borrowHistory = new ArrayList<>();
-
-    @Transient
-    private static final int MAX_BORROW_LIMIT = 5;
 
     protected Borrower() {}
 
@@ -32,7 +31,14 @@ public class Borrower {
         this.name = name;
         this.phone = phone;
         this.email = email;
-        this.borrowHistory = new ArrayList<>();
+    }
+
+    public Borrower(String id, String name, String phone, String email, String type) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.type = type;
     }
 
     public int getCurrentBorrowCount() {
@@ -40,19 +46,9 @@ public class Borrower {
                 .filter(r -> !r.isReturned()).count();
     }
 
-    public boolean canBorrow() {
-        return getCurrentBorrowCount() < MAX_BORROW_LIMIT;
-    }
-
     public void addBorrowRecord(BorrowRecord record) {
         borrowHistory.add(record);
         record.setBorrower(this);
-    }
-
-    public List<BorrowRecord> getOverdueRecords() {
-        return borrowHistory.stream()
-                .filter(r -> !r.isReturned() && r.isOverdue())
-                .collect(Collectors.toList());
     }
 
     public String getId() { return id; }
@@ -63,6 +59,8 @@ public class Borrower {
     public void setPhone(String phone) { this.phone = phone; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
     public List<BorrowRecord> getBorrowHistory() { return borrowHistory; }
     public void setBorrowHistory(List<BorrowRecord> borrowHistory) { this.borrowHistory = borrowHistory; }
 }

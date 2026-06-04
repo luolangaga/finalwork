@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 public class BorrowRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "record_id", nullable = false)
     private String recordId;
 
     @ManyToOne(fetch = FetchType.LAZY)
