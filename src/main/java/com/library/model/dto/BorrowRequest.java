@@ -4,6 +4,7 @@ public class BorrowRequest {
 
     private String borrowerId;
     private String resourceId;
+    private String borrowerType;
 
     public BorrowRequest() {}
 
@@ -16,4 +17,6 @@ public class BorrowRequest {
     public void setBorrowerId(String borrowerId) { this.borrowerId = borrowerId; }
     public String getResourceId() { return resourceId; }
     public void setResourceId(String resourceId) { this.resourceId = resourceId; }
+    public String getBorrowerType() { return borrowerType; }
+    public void setBorrowerType(String borrowerType) { this.borrowerType = borrowerType; }
 }
