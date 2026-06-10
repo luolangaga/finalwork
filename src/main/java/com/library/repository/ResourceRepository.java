@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ResourceRepository extends JpaRepository<LibraryResource, String> {
 
-    @Query("SELECT r FROM LibraryResource r WHERE TYPE(r) = :type")
+    @Query("SELECT r FROM LibraryResource r WHERE r.type = :type")
     List<LibraryResource> findByResourceType(@Param("type") String type);
 
     List<LibraryResource> findByTitleContaining(String keyword);
