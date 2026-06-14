@@ -35,7 +35,7 @@ public class ResourceManager {
 
     public List<LibraryResource> findByType(String type) {
         return resourceMap.values().stream()
-                .filter(r -> r.getResourceType().equals(type))
+                .filter(r -> r.getType().equals(type))
                 .collect(Collectors.toList());
     }
 

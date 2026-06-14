@@ -8,13 +8,13 @@ public class CollectionUtils {
 
     public static Map<String, List<LibraryResource>> groupByType(List<LibraryResource> resources) {
         return resources.stream()
-                .collect(Collectors.groupingBy(LibraryResource::getResourceType));
+                .collect(Collectors.groupingBy(LibraryResource::getType));
     }
 
     public static Map<String, Long> countByType(List<LibraryResource> resources) {
         return resources.stream()
                 .collect(Collectors.groupingBy(
-                        LibraryResource::getResourceType,
+                        LibraryResource::getType,
                         Collectors.counting()));
     }
 
