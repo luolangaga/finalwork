@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Map;
 
 public class QueryPanel extends JPanel {
 
@@ -30,7 +31,7 @@ public class QueryPanel extends JPanel {
                 new String[]{"全部", "BOOK", "MAGAZINE", "DVD", "EBOOK"});
         searchBtn = new JButton("搜索");
 
-        String[] cols = {"编号", "标题", "类型", "状态", "借阅者"};
+        String[] cols = {"编号", "标题", "类型", "状态", "借阅者", "详情"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
@@ -64,14 +65,22 @@ public class QueryPanel extends JPanel {
                     HttpClientUtil.searchResources(keyword, type);
             tableModel.setRowCount(0);
             for (ResourceDTO r : results) {
+                String detail = formatExtraAttrs(r.getExtraAttrs());
                 tableModel.addRow(new Object[]{
                         r.getId(), r.getTitle(),
                         r.getType(), r.getStatus(),
-                        r.getBorrowerId()});
+                        r.getBorrowerId(), detail});
             }
             parent.setStatus("查询到 " + results.size() + " 条记录");
         } catch (Exception ex) {
             parent.setStatus("查询失败: " + ex.getMessage());
         }
+    }
+
+    private String formatExtraAttrs(Map<String, Object> attrs) {
+        if (attrs == null || attrs.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        attrs.forEach((k, v) -> sb.append(k).append("=").append(v).append("; "));
+        return sb.toString().trim();
     }
 }
