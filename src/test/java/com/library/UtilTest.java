@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +18,16 @@ class UtilTest {
     @Test
     void testCollectionUtils() {
         List<LibraryResource> resources = new ArrayList<>();
-        resources.add(new Book("B001", "Java编程思想",
-                "Bruce Eckel", "ISBN1", "出版社", 880));
-        resources.add(new Magazine("M001", "自然杂志",
-                "2024-01", LocalDate.now(), "科技"));
-        resources.add(new DVD("D001", "星际穿越",
-                "Nolan", 169, "科幻"));
+        Book b = new Book("B001", "Java编程思想");
+        b.setExtraAttrs(Map.of("author", "Bruce Eckel"));
+        Magazine m = new Magazine("M001", "自然杂志");
+        m.setExtraAttrs(Map.of("category", "科技"));
+        DVD d = new DVD("D001", "星际穿越");
+        d.setExtraAttrs(Map.of("director", "Nolan"));
+
+        resources.add(b);
+        resources.add(m);
+        resources.add(d);
 
         Map<String, Long> counts = CollectionUtils.countByType(resources);
         assertEquals(1L, counts.get("BOOK"));

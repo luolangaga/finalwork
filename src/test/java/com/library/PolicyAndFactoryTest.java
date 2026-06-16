@@ -1,31 +1,30 @@
 package com.library;
 
 import com.library.model.factory.ResourceFactory;
+import com.library.model.dto.ResourceDTO;
 import com.library.model.entity.*;
 import com.library.model.policy.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 class PolicyAndFactoryTest {
 
     @Test
     void testFactoryDynamicRegistration() {
-        ResourceFactory factory = new ResourceFactory();
-        assertTrue(factory.isTypeSupported("BOOK"));
-        assertTrue(factory.isTypeSupported("MAGAZINE"));
-        assertTrue(factory.isTypeSupported("DVD"));
-        assertTrue(factory.isTypeSupported("EBOOK"));
-        assertEquals(4, factory.getSupportedTypes().size());
+        assertTrue(ResourceFactory.isTypeSupported("BOOK"));
+        assertTrue(ResourceFactory.isTypeSupported("MAGAZINE"));
+        assertTrue(ResourceFactory.isTypeSupported("DVD"));
+        assertTrue(ResourceFactory.isTypeSupported("EBOOK"));
     }
 
     @Test
     void testFactoryUnknownType() {
-        ResourceFactory factory = new ResourceFactory();
+        ResourceDTO dto = new ResourceDTO();
+        dto.setType("UNKNOWN");
         assertThrows(IllegalArgumentException.class, () ->
-                factory.createResource("UNKNOWN", new HashMap<>()));
+                ResourceFactory.create(dto));
     }
 
     @Test
@@ -62,31 +61,35 @@ class PolicyAndFactoryTest {
 
     @Test
     void testCreateMagazineViaFactory() {
-        ResourceFactory factory = new ResourceFactory();
-        Map<String, String> params = new HashMap<>();
-        params.put("id", "M001");
-        params.put("title", "测试杂志");
-        params.put("issueNumber", "2024-01");
-        params.put("publishDate", "2024-01-15");
-        params.put("category", "科技");
+        ResourceDTO dto = new ResourceDTO();
+        dto.setId("M001");
+        dto.setTitle("测试杂志");
+        dto.setType("MAGAZINE");
+        dto.setExtraAttrs(Map.of(
+                "issueNumber", "2024-01",
+                "publishDate", "2024-01-15",
+                "category", "科技"));
 
-        LibraryResource resource = factory.createResource("MAGAZINE", params);
+        LibraryResource resource = ResourceFactory.create(dto);
         assertInstanceOf(Magazine.class, resource);
         assertEquals("测试杂志", resource.getTitle());
+        assertNotNull(resource.getExtraAttrs());
     }
 
     @Test
     void testCreateDVDViaFactory() {
-        ResourceFactory factory = new ResourceFactory();
-        Map<String, String> params = new HashMap<>();
-        params.put("id", "D001");
-        params.put("title", "测试DVD");
-        params.put("director", "测试导演");
-        params.put("duration", "120");
-        params.put("genre", "科幻");
+        ResourceDTO dto = new ResourceDTO();
+        dto.setId("D001");
+        dto.setTitle("测试DVD");
+        dto.setType("DVD");
+        dto.setExtraAttrs(Map.of(
+                "director", "测试导演",
+                "durationMinutes", 120,
+                "genre", "科幻"));
 
-        LibraryResource resource = factory.createResource("DVD", params);
+        LibraryResource resource = ResourceFactory.create(dto);
         assertInstanceOf(DVD.class, resource);
         assertEquals("测试DVD", resource.getTitle());
+        assertNotNull(resource.getExtraAttrs());
     }
 }
