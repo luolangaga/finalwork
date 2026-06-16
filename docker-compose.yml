@@ -53,13 +53,30 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  dotnet-api:
+    build:
+      context: .
+      dockerfile: dotnet-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      ConnectionStrings__PostgreSQL: Host=postgresql;Database=library;Username=library_admin;Password=${PG_PASSWORD:-library_password};SearchPath=analytics
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
   vue-web:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     ports:
       - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
       - spring-boot
 
