@@ -120,6 +120,12 @@ curl http://localhost:8080/api/resources/type/BOOK
 curl "http://localhost:8080/api/resources/search?keyword=Java"
 curl -X POST "http://localhost:8080/api/borrow/borrow?borrowerId=B001&resourceId=R001"
 curl -X POST "http://localhost:8080/api/borrow/return?resourceId=R001"
+
+# .NET 统计 API
+curl http://localhost:8081/api/statistics/trends
+curl http://localhost:8081/api/statistics/hot-resources
+curl -X POST http://localhost:8081/api/reports/generate -H 'Content-Type: application/json' -d '{"type":"borrow"}'
+curl http://localhost:8081/api/notifications/B001
 ```
 
 ## 初始化数据
@@ -162,3 +168,31 @@ mvn test -Dtest=PolicyAndFactoryTest
 - **里氏替换原则(LSP)**：子类可完全替代基类
 - **接口隔离原则(ISP)**：BorrowPolicy 细粒度设计
 - **依赖倒置原则(DIP)**：Service 依赖 Repository 接口
+
+## .NET 10 扩展服务
+
+.NET 10 Minimal API 提供数据分析、统计报表、逾期通知等扩展功能：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /api/statistics/trends | 借阅趋势统计 |
+| GET | /api/statistics/hot-resources | 热门资源排名 |
+| GET | /api/statistics/type-distribution | 资源类型分布 |
+| POST | /api/reports/generate | 生成借阅报表 |
+| GET | /api/notifications/{userId} | 查询用户通知 |
+| POST | /api/notifications/mark-read | 标为已读 |
+
+```bash
+cd dotnet-service
+dotnet run
+```
+
+## CI/CD
+
+GitHub Actions 工作流在每次 push 到 master/main 分支或创建 tag 时自动构建并推送 Docker 镜像：
+
+- `library-spring-boot` - Spring Boot 核心服务
+- `library-dotnet-api` - .NET 10 扩展服务
+- `library-vue-web` - Vue 3 Web 前端
+
+在 GitHub 仓库设置 Secrets：`DOCKER_USERNAME`、`DOCKER_PASSWORD`。
