@@ -1,0 +1,17 @@
+version: '1.0'
+name: sync-to-github
+displayName: 定时同步至GitHub
+stages:
+  - stage:
+    name: sync
+    displayName: 同步
+    steps:
+      - step: shell@agent
+        name: sync_github
+        displayName: 推送至GitHub仓库
+        script:
+          - git remote add github https://${GITHUB_TOKEN}@github.com/luolangaga/finalwork.git
+          - git push github master --force
+triggers:
+  schedule:
+    - cron: '0 * * * *'
