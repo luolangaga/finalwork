@@ -4,6 +4,7 @@ using DotnetService.Data;
 using DotnetService.Models;
 using DotnetService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
