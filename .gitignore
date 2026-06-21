@@ -47,3 +47,7 @@ release.properties
 dotnet-service/bin/
 dotnet-service/obj/
 *.DotSettings.user
+
+### Node / Vue ###
+frontend/node_modules/
+frontend/dist/
