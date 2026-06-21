@@ -8,8 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AnalyticsDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("PostgreSQL"),
-        o => o.SetMigrationHistoryTable("__EFMigrationsHistory", "analytics")));
+        builder.Configuration.GetConnectionString("PostgreSQL")));
 
 builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddScoped<ReportService>();

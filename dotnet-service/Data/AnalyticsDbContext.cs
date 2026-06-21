@@ -7,9 +7,9 @@ public class AnalyticsDbContext : DbContext
 {
     public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options) : base(options) {}
 
-    public DbSet<Notification> Notifications { get; set; }
-    public DbSet<StatisticsSnapshot> StatisticsSnapshots { get; set; }
-    public DbSet<BorrowEventLog> BorrowEventLogs { get; set; }
+    public DbSet<Notification> Notifications { get; set; } = default!;
+    public DbSet<StatisticsSnapshot> StatisticsSnapshots { get; set; } = default!;
+    public DbSet<BorrowEventLog> BorrowEventLogs { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

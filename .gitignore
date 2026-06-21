@@ -42,3 +42,8 @@ release.properties
 *.class
 *.jar
 *.war
+
+### .NET ###
+dotnet-service/bin/
+dotnet-service/obj/
+*.DotSettings.user
