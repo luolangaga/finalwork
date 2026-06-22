@@ -4,35 +4,28 @@ Spring Boot + .NET + RabbitMQ + PostgreSQL + Vue 3 + Docker 微服务架构
 
 ---
 
-## 部署指南（拉镜像即用）
+## 部署指南（克隆即用）
 
 ### 1. 安装 Docker
 
-- Windows/Mac: 下载 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Windows/Mac: [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - Linux: `curl -fsSL https://get.docker.com | bash`
 
-验证安装：
 ```bash
-docker -v
-docker compose version
+docker -v && docker compose version
 ```
 
-### 2. 下载部署文件
+### 2. 克隆并启动
 
 ```bash
-git clone https://github.com/luolangaga/finalwork.git
+git clone https://gitee.com/swunjavaclass/finalwork.git
 cd finalwork
+docker compose up -d
 ```
 
-### 3. 一键启动
+首次会构建镜像（3-5 分钟），之后秒启。
 
-```bash
-docker compose -f docker-compose.deploy.yml up -d
-```
-
-首次会自动从 Docker Hub 拉取镜像，之后秒级启动。
-
-### 4. 访问
+### 3. 访问
 
 | 服务 | 地址 |
 |------|------|
@@ -40,53 +33,6 @@ docker compose -f docker-compose.deploy.yml up -d
 | Spring Boot API | http://localhost:8080 |
 | .NET API | http://localhost:8081 |
 | RabbitMQ 管理 | http://localhost:15672 (guest/guest) |
-
-### 5. 验证
-
-```bash
-# 查看是否全部启动
-docker compose -f docker-compose.deploy.yml ps
-
-# 测试 API
-curl http://localhost:8080/api/resources
-```
-
----
-
-## 常用命令
-
-```bash
-# 启动
-docker compose -f docker-compose.deploy.yml up -d
-
-# 查看日志
-docker compose -f docker-compose.deploy.yml logs -f
-
-# 停止
-docker compose -f docker-compose.deploy.yml down
-
-# 停止并清空数据
-docker compose -f docker-compose.deploy.yml down -v
-```
-
----
-
-## 配置
-
-所有配置通过环境变量注入：
-
-| 环境变量 | 默认值 | 说明 |
-|----------|--------|------|
-| `PG_PASSWORD` | `library_password` | PostgreSQL 密码 |
-| `DOCKER_USERNAME` | `luolangaga` | Docker Hub 用户名（切换镜像源） |
-
-```bash
-# 自定义密码
-PG_PASSWORD=myPass123 docker compose -f docker-compose.deploy.yml up -d
-
-# 指定版本
-SPRING_TAG=v1.0.0 docker compose -f docker-compose.deploy.yml up -d
-```
 
 ---
 
@@ -180,15 +126,26 @@ docker compose build
 
 ---
 
-## CI/CD
+## 常用命令
 
-GitHub Actions 自动构建 3 个镜像并推送到 Docker Hub：
+```bash
+docker compose up -d              # 启动
+docker compose logs -f            # 查看日志
+docker compose down               # 停止
+docker compose down -v            # 停止并清空数据
+docker compose restart spring-boot  # 重启单个服务
+```
 
-- `luolangaga/library-spring-boot`
-- `luolangaga/library-dotnet-api`
-- `luolangaga/library-vue-web`
+### 自定义配置
 
-需在 GitHub 仓库 Settings → Secrets 中配置：`DOCKER_USERNAME`、`DOCKER_PASSWORD`。
+```bash
+# PostgreSQL 密码
+PG_PASSWORD=myPass123 docker compose up -d
+```
+
+## CI
+
+GitHub Actions 每次 push 自动验证：Java 编译、.NET 编译、Vue 构建、Docker 镜像构建。
 
 ---
 
