@@ -1,139 +1,168 @@
 # 图书馆管理系统
 
-基于微服务架构的综合性图书资源管理平台，Spring Boot 核心后端 + .NET 10 扩展服务 + RabbitMQ 消息中间件 + PostgreSQL 数据库 + Java Swing / Vue 3 双前端 + Docker 容器化部署。
+Spring Boot + .NET + RabbitMQ + PostgreSQL + Vue 3 + Docker 微服务架构
 
-## 技术栈
+---
 
-| 层次 | 技术 | 说明 |
-|------|------|------|
-| Java 后端 | Spring Boot 3.2.5 | 自动配置、内嵌 Tomcat、RESTful API |
-| .NET 后端 | .NET 10 (ASP.NET Core) | 高性能 Web API、跨平台、原生 AOT |
-| 消息中间件 | RabbitMQ 3.x | AMQP 协议、异步解耦、可靠消息投递 |
-| 数据库 | PostgreSQL 16 | 企业级 RDBMS、JSONB 支持、全文检索 |
-| 持久层 | Spring Data JPA | ORM 映射、Repository 抽象、JPQL 查询 |
-| 桌面客户端 | Java Swing | 原生 GUI、跨平台兼容 |
-| Web 前端 | Vue 3 + Vite | 组合式 API、响应式、快速构建 |
-| 容器化 | Docker + Compose | 标准化镜像、一键编排部署 |
-| Java 版本 | JDK 17+ | switch 表达式、pattern matching |
+## 部署指南（拉镜像即用）
 
-## 环境要求
+### 1. 安装 Docker
 
-- **JDK 17+**（必须）
-- **Maven 3.8+**（必须）
-- **Docker 24+**（容器化部署）
-- **PostgreSQL 16**（Docker 内置或独立部署）
+- Windows/Mac: 下载 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Linux: `curl -fsSL https://get.docker.com | bash`
 
+验证安装：
 ```bash
-java -version
-mvn -version
 docker -v
+docker compose version
 ```
 
-## 项目结构
-
-```
-library-management-system/
-├── pom.xml
-├── Dockerfile
-├── docker-compose.yml
-├── nginx.conf
-├── README.md
-├── DESIGN.md
-└── src/
-    ├── main/
-    │   ├── java/com/library/
-    │   │   ├── LibraryApplication.java
-    │   │   ├── controller/
-    │   │   ├── service/
-    │   │   ├── repository/
-    │   │   ├── model/
-    │   │   │   ├── entity/
-    │   │   │   ├── dto/
-    │   │   │   ├── factory/
-    │   │   │   └── policy/
-    │   │   ├── client/
-    │   │   ├── config/
-    │   │   ├── util/
-    │   │   └── manager/
-    │   └── resources/
-    │       ├── application.yml
-    │       └── data.sql
-    └── test/java/com/library/
-```
-
-## 编译与运行
-
-### 方式一：Docker Compose（推荐）
+### 2. 下载部署文件
 
 ```bash
-docker-compose up -d
+git clone https://github.com/luolangaga/finalwork.git
+cd finalwork
 ```
 
-启动完成后：
-- Spring Boot: http://localhost:8080
-- RabbitMQ 管理界面: http://localhost:15672
-- PostgreSQL: localhost:5432
-- Web 前端: http://localhost:80
-
-### 方式二：本地开发
+### 3. 一键启动
 
 ```bash
-mvn clean compile -DskipTests
-mvn spring-boot:run
+docker compose -f docker-compose.deploy.yml up -d
 ```
 
-启动 GUI 客户端：
+首次会自动从 Docker Hub 拉取镜像，之后秒级启动。
+
+### 4. 访问
+
+| 服务 | 地址 |
+|------|------|
+| **Web 前端** | http://localhost |
+| Spring Boot API | http://localhost:8080 |
+| .NET API | http://localhost:8081 |
+| RabbitMQ 管理 | http://localhost:15672 (guest/guest) |
+
+### 5. 验证
+
 ```bash
-mvn exec:java -Dexec.mainClass="com.library.client.MainFrame"
+# 查看是否全部启动
+docker compose -f docker-compose.deploy.yml ps
+
+# 测试 API
+curl http://localhost:8080/api/resources
 ```
 
-## REST API 接口
+---
 
-### Spring Boot 核心 API
+## 常用命令
+
+```bash
+# 启动
+docker compose -f docker-compose.deploy.yml up -d
+
+# 查看日志
+docker compose -f docker-compose.deploy.yml logs -f
+
+# 停止
+docker compose -f docker-compose.deploy.yml down
+
+# 停止并清空数据
+docker compose -f docker-compose.deploy.yml down -v
+```
+
+---
+
+## 配置
+
+所有配置通过环境变量注入：
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `PG_PASSWORD` | `library_password` | PostgreSQL 密码 |
+| `DOCKER_USERNAME` | `luolangaga` | Docker Hub 用户名（切换镜像源） |
+
+```bash
+# 自定义密码
+PG_PASSWORD=myPass123 docker compose -f docker-compose.deploy.yml up -d
+
+# 指定版本
+SPRING_TAG=v1.0.0 docker compose -f docker-compose.deploy.yml up -d
+```
+
+---
+
+## 架构
+
+```
+浏览器 → :80 (Nginx + Vue 3)
+            ├── /api/resources/*      → spring-boot:8080
+            ├── /api/borrow/*         → spring-boot:8080
+            ├── /api/statistics/*     → dotnet-api:8081
+            └── /api/notifications/*  → dotnet-api:8081
+
+spring-boot ──→ postgresql:5432 (library/public)
+spring-boot ──→ rabbitmq:5672     (发布 borrow.created 事件)
+
+dotnet-api  ──→ postgresql:5432 (library/analytics)
+dotnet-api  ──→ rabbitmq:5672     (消费 borrow.created 事件)
+```
+
+---
+
+## REST API
+
+### Spring Boot（:8080）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /api/resources | 获取所有资源列表 |
-| GET | /api/resources/{id} | 按 ID 查询资源 |
-| GET | /api/resources/type/{type} | 按类型查询资源 |
-| GET | /api/resources/search?keyword= | 关键词搜索资源 |
-| POST | /api/resources | 添加新资源 |
+| GET | /api/resources | 获取所有资源 |
+| GET | /api/resources/{id} | 按 ID 查询 |
+| GET | /api/resources/type/{type} | 按类型查询 |
+| GET | /api/resources/search?keyword= | 关键词搜索 |
+| POST | /api/resources | 添加资源 |
 | DELETE | /api/resources/{id} | 删除资源 |
-| POST | /api/borrow/borrow | 借阅资源 |
-| POST | /api/borrow/return | 归还资源 |
-| GET | /api/borrow/overdue | 查询逾期记录 |
+| POST | /api/borrow/borrow | 借阅 |
+| POST | /api/borrow/return | 归还 |
+| GET | /api/borrow/overdue | 逾期记录 |
 
-### .NET 10 扩展 API
+### .NET（:8081）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /api/statistics/trends | 借阅趋势统计 |
-| GET | /api/statistics/hot-resources | 热门资源排名 |
-| POST | /api/reports/generate | 生成借阅报表 |
-| GET | /api/notifications/{userId} | 查询用户通知 |
-
-### API 使用示例
+| GET | /api/statistics/trends | 借阅趋势 |
+| GET | /api/statistics/hot-resources | 热门资源 |
+| POST | /api/reports/generate | 生成报表 |
+| GET | /api/notifications/{userId} | 用户通知 |
 
 ```bash
 curl http://localhost:8080/api/resources
-curl http://localhost:8080/api/resources/type/BOOK
-curl "http://localhost:8080/api/resources/search?keyword=Java"
 curl -X POST "http://localhost:8080/api/borrow/borrow?borrowerId=B001&resourceId=R001"
-curl -X POST "http://localhost:8080/api/borrow/return?resourceId=R001"
-
-# .NET 统计 API
 curl http://localhost:8081/api/statistics/trends
-curl http://localhost:8081/api/statistics/hot-resources
-curl -X POST http://localhost:8081/api/reports/generate -H 'Content-Type: application/json' -d '{"type":"borrow"}'
-curl http://localhost:8081/api/notifications/B001
 ```
+
+---
+
+## 本地开发
+
+```bash
+# 仅 Spring Boot（H2 内存库，无需 Docker）
+mvn spring-boot:run
+
+# .NET
+cd dotnet-service && dotnet run
+
+# Vue 前端（热更新）
+cd frontend && npm install && npm run dev
+
+# 本地构建所有镜像
+docker compose build
+```
+
+---
 
 ## 初始化数据
 
-**资源数据：**
-
-| 编号 | 标题 | 类型 | 借阅期限 |
-|------|------|------|---------|
+| 编号 | 标题 | 类型 | 可借 |
+|------|------|------|------|
 | R001 | Java编程思想 | BOOK | 30天 |
 | R002 | 设计模式 | BOOK | 30天 |
 | R003 | Spring实战 | BOOK | 30天 |
@@ -143,56 +172,26 @@ curl http://localhost:8081/api/notifications/B001
 | R007 | 地球脉动 | DVD | 7天 |
 | R008 | 算法导论 | EBOOK | 21天 |
 
-**借阅者数据：**
+| 编号 | 姓名 | 类型 | 限额 |
+|------|------|------|------|
+| B001 | 张三 | STUDENT | 5本 |
+| B002 | 李四 | TEACHER | 10本 |
+| B003 | 王五 | PUBLIC | 3本 |
 
-| 编号 | 姓名 | 类型 |
-|------|------|------|
-| B001 | 张三 | STUDENT |
-| B002 | 李四 | TEACHER |
-| B003 | 王五 | PUBLIC |
-
-## 运行测试
-
-```bash
-mvn test
-mvn test -Dtest=IntegrationTest
-mvn test -Dtest=PolicyAndFactoryTest
-```
-
-## 设计原则
-
-详见 [DESIGN.md](DESIGN.md)
-
-- **开闭原则(OCP)**：抽象基类 + 工厂模式 + 策略模式
-- **单一职责原则(SRP)**：每个类只负责一个职责
-- **里氏替换原则(LSP)**：子类可完全替代基类
-- **接口隔离原则(ISP)**：BorrowPolicy 细粒度设计
-- **依赖倒置原则(DIP)**：Service 依赖 Repository 接口
-
-## .NET 10 扩展服务
-
-.NET 10 Minimal API 提供数据分析、统计报表、逾期通知等扩展功能：
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/statistics/trends | 借阅趋势统计 |
-| GET | /api/statistics/hot-resources | 热门资源排名 |
-| GET | /api/statistics/type-distribution | 资源类型分布 |
-| POST | /api/reports/generate | 生成借阅报表 |
-| GET | /api/notifications/{userId} | 查询用户通知 |
-| POST | /api/notifications/mark-read | 标为已读 |
-
-```bash
-cd dotnet-service
-dotnet run
-```
+---
 
 ## CI/CD
 
-GitHub Actions 工作流在每次 push 到 master/main 分支或创建 tag 时自动构建并推送 Docker 镜像：
+GitHub Actions 自动构建 3 个镜像并推送到 Docker Hub：
 
-- `library-spring-boot` - Spring Boot 核心服务
-- `library-dotnet-api` - .NET 10 扩展服务
-- `library-vue-web` - Vue 3 Web 前端
+- `luolangaga/library-spring-boot`
+- `luolangaga/library-dotnet-api`
+- `luolangaga/library-vue-web`
 
-在 GitHub 仓库设置 Secrets：`DOCKER_USERNAME`、`DOCKER_PASSWORD`。
+需在 GitHub 仓库 Settings → Secrets 中配置：`DOCKER_USERNAME`、`DOCKER_PASSWORD`。
+
+---
+
+## 设计原则
+
+详见 [DESIGN.md](DESIGN.md) — OCP / SRP / LSP / ISP / DIP 全部落地。

@@ -23,14 +23,19 @@ jobs:
             dockerfile: ./Dockerfile
             context: .
             image-env: SPRING_IMAGE
+            build-args: ''
           - name: dotnet-api
             dockerfile: ./dotnet-service/Dockerfile
             context: .
             image-env: DOTNET_IMAGE
+            build-args: ''
           - name: vue-web
             dockerfile: ./frontend/Dockerfile
             context: .
             image-env: VUE_IMAGE
+            build-args: |
+              SPRING_API=/api
+              DOTNET_API=/api
 
     steps:
       - name: Checkout
@@ -66,5 +71,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.service.build-args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

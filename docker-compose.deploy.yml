@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgresql:
     image: postgres:16-alpine
@@ -34,9 +32,7 @@ services:
       retries: 5
 
   spring-boot:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME:-luolangaga}/library-spring-boot:latest
     ports:
       - "8080:8080"
     environment:
@@ -55,9 +51,7 @@ services:
         condition: service_healthy
 
   dotnet-api:
-    build:
-      context: .
-      dockerfile: dotnet-service/Dockerfile
+    image: ${DOCKER_USERNAME:-luolangaga}/library-dotnet-api:latest
     ports:
       - "8081:8081"
     environment:
@@ -73,14 +67,9 @@ services:
         condition: service_healthy
 
   vue-web:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    image: ${DOCKER_USERNAME:-luolangaga}/library-vue-web:latest
     ports:
       - "80:80"
-    environment:
-      SPRING_API: /api
-      DOTNET_API: /api
     depends_on:
       - spring-boot
 
